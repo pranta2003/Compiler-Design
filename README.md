@@ -17,7 +17,8 @@ int vowels = 0, consonants = 0;
 [A-Za-z]         { consonants++; }
 .|\n             { /* ignore other chars */ }
 %%
-int main(void) {
+int yywrap(){}
+int main() {
     yylex();
     printf("Vowels: %d\nConsonants: %d\n", vowels, consonants);
     return 0;
@@ -55,9 +56,10 @@ int upperc = 0, lowerc = 0;
 [a-z]     { lowerc++; }
 .|\n      { /* ignore */ }
 %%
-int main(void) {
+int yywrap(){}
+int main() {
     yylex();
-    printf("Uppercase: %d\nLowercase: %d\n", upperc, lowerc);
+    printf("\n\nUppercase: %d\nLowercase: %d\n", upperc, lowerc);
     return 0;
 }
 ```
@@ -86,42 +88,54 @@ Tokenize input with regex: identifiers, numbers, operators, punctuation, strings
 %{
 #include <stdio.h>
 #include <string.h>
-int kw=0, id=0, num=0, op=0, punc=0, strl=0, cmt=0;
-const char* keywords[] = {
-    "auto","break","case","char","const","continue","default","do","double","else","enum",
-    "extern","float","for","goto","if","inline","int","long","register","restrict","return",
-    "short","signed","sizeof","static","struct","switch","typedef","union","unsigned","void",
-    "volatile","while","_Bool","_Complex","_Imaginary", NULL
-};
-int is_keyword(const char* s){
-    for(int i=0; keywords[i]!=NULL; ++i) if(strcmp(s,keywords[i])==0) return 1;
-    return 0;
-}
+FILE *yyin;
 %}
-%x CMT
-%%
-"//".*                           { cmt++; /* single-line comment */ }
-"/*"                             { BEGIN(CMT); }
-<CMT>[^*\n]*                     { /* inside block comment */ }
-<CMT>"*"+[^*/\n]*                { /* eat */ }
-<CMT>\n                          { cmt++; /* comment line */ }
-<CMT>"*"+"/"                     { BEGIN(INITIAL); }
 
-\"([^\"\\]|\\.)*\"               { strl++; }
-[0-9]+(\.[0-9]+)?                { num++; }
-[A-Za-z_][A-Za-z0-9_]*           {
-                                   if(is_keyword(yytext)) kw++;
-                                   else id++;
-                                 }
-[+\-*/%=&|!<>^]+                 { op++; }
-[;:,.\(\)\{\}\[\]]               { punc++; }
-[ \t\r\n]+                       { /* skip whitespace */ }
-.                                { /* ignore others */ }
 %%
-int main(void){
+
+"int"|"float"|"char"|"if"|"else"|"while"|"return"  { printf("KEYWORD: %s\n", yytext); }
+
+[0-9]+(\.[0-9]+)?     { printf("NUMBER: %s\n", yytext); }
+
+"=="|"<="|">="|"!="|">"|"<"   { printf("RELATIONAL OPERATOR: %s\n", yytext); }
+
+"="|"+"|"-"|"*"|"/"   { printf("OPERATOR: %s\n", yytext); }
+
+"("                  { printf("DELIMITER: %s\n", yytext); }
+")"                  { printf("DELIMITER: %s\n", yytext); }
+"{"                  { printf("DELIMITER: %s\n", yytext); }
+"}"                  { printf("DELIMITER: %s\n", yytext); }
+";"                  { printf("DELIMITER: %s\n", yytext); }
+","                  { printf("DELIMITER: %s\n", yytext); }
+
+\"[^\"]*\"           { printf("STRING: %s\n", yytext); }
+
+"//".*               { printf("COMMENT (SINGLE LINE): %s\n", yytext); }
+
+"/*"([^*]|\*+[^*/])*\*+"/"    { printf("COMMENT (MULTI LINE): %s\n", yytext); }
+
+[a-zA-Z_][a-zA-Z0-9_]*  { printf("IDENTIFIER: %s\n", yytext); }
+
+[ \t\n]+              ; // Ignore whitespace
+
+.                     { printf("UNKNOWN: %s\n", yytext); }
+
+%%
+
+int yywrap() {
+    return 1;
+}
+
+int main(int argc, char **argv) {
+    yyin = fopen("input.txt", "r");
+    if (!yyin) {
+        perror("Failed to open input.txt");
+        return 1;
+    }
+
     yylex();
-    printf("Keywords:%d\nIdentifiers:%d\nNumbers:%d\nOperators:%d\nPunctuations:%d\nStrings:%d\nComment lines:%d\n",
-            kw,id,num,op,punc,strl,cmt);
+
+    fclose(yyin);
     return 0;
 }
 ```
@@ -155,12 +169,17 @@ Match each line with regex ^.*aa$ to detect lines ending in 'aa'. Print the matc
 %{
 #include <stdio.h>
 %}
+
 %%
 ^.*aa$      { printf("Matched: %s\n", yytext); }
 ^.*\n       { /* not matched; consume line */ }
 .           { /* consume */ }
 %%
-int main(void){
+
+int yywrap() {
+    return 1;
+}
+int main(){
     yylex();
     return 0;
 }
@@ -192,11 +211,16 @@ Match lines starting with 'bb' and ending with 'bb' using ^bb.*bb$. Print matche
 %{
 #include <stdio.h>
 %}
+
 %%
 ^bb.*bb$    { printf("Matched: %s\n", yytext); }
 ^.*\n       { /* not matched */ }
 .           { /* consume */ }
 %%
+
+int yywrap() {
+    return 1;
+}
 int main(void){
     yylex();
     return 0;
@@ -228,12 +252,17 @@ Use ^[0-9]{2}1[0-9]{3}9[0-9]*$ to ensure the 3rd digit is '1' and the 7th digit 
 %{
 #include <stdio.h>
 %}
+
 %%
 ^[0-9]{2}1[0-9]{3}9[0-9]*$   { printf("Valid: %s\n", yytext); }
 ^[0-9]+\n?                   { printf("Invalid: %s\n", yytext); }
 ^.*\n                        { /* ignore non-numeric lines */ }
 %%
-int main(void){
+
+int yywrap() {
+    return 1;
+}
+int main(){
     yylex();
     return 0;
 }
@@ -267,17 +296,30 @@ Count: words by matching [^\n ]+; spaces by [ ]+; lines by \n; characters by sum
 %{
 #include <stdio.h>
 #include <string.h>
+FILE *yyin;
 long chars=0, words=0, spaces=0, lines=0;
 %}
+
 %%
 [^\n ]+      { chars += yyleng; words++; }
 [ ]+         { chars += yyleng; spaces += yyleng; }
 \n           { chars++; lines++; }
-.            { chars++; }
 %%
-int main(void){
+
+int yywrap() {
+    return 1;
+}
+int main(){
+    yyin = fopen("input.txt", "r");
+    if (!yyin) {
+        perror("Failed to open input.txt");
+        return 1;
+    }
+
     yylex();
     printf("Characters:%ld\nWords:%ld\nSpaces:%ld\nLines:%ld\n", chars,words,spaces,lines);
+
+    fclose(yyin);
     return 0;
 }
 ```
@@ -307,22 +349,20 @@ Count comment lines: //...\n adds 1. For /* ... */ block comments, enter a start
 ```lex
 %{
 #include <stdio.h>
-int comment_lines = 0;
+int c = 0, m = 0;
 %}
-%x BCOMM
+
 %%
-"//".*\n                 { comment_lines++; }
-"/*"                     { BEGIN(BCOMM); comment_lines++; }
-<BCOMM>[^\n]*\n         { comment_lines++; }
-<BCOMM>\n               { comment_lines++; }
-<BCOMM>[^*\n]+          { /* stay */ }
-<BCOMM>"*"+[^*/\n]*     { /* stay */ }
-<BCOMM>"*"+"/"          { BEGIN(INITIAL); }
-.|\n                    { /* non-comment text */ }
+[/]{1}[/]{1}[a-z A-Z0-9]*          { c++; }
+[/]{1}[*]{1}[a-z A-Z0-9]*[*]{1}[/]{1}   { m++; }
+.*|\n*                          { ; }
 %%
-int main(void){
+
+int yywrap() { return 1; }
+int main() {
+    printf("Enter code (Ctrl+D to stop):\n");
     yylex();
-    printf("Comment lines: %d\n", comment_lines);
+    printf("\n\nComment Lines : %d", c+m);
     return 0;
 }
 ```
@@ -355,15 +395,17 @@ Heuristic: a sentence containing a semicolon or a comma followed by a coordinati
 int compound = 0;
 %}
 %%
-.*;.*\n                                { compound = 1; printf("Compound: %s", yytext); }
-.*,([ \t])*((for|and|nor|but|or|yet|so))\b.*\n  { compound = 1; printf("Compound: %s", yytext); }
+.*;.*\n                                { compound = 1; printf("Compound: %s\n", yytext); }
+.*,([ \t])*((for|and|nor|but|or|yet|so))\b.*\n  { compound = 1; printf("Compound: %s\n", yytext); }
 ^.*\n                                   {
-                                          if(!compound) printf("Simple: %s", yytext);
+                                          if(!compound) printf("Simple: %s\n", yytext);
                                           compound = 0;
                                         }
 .|\n                                    { /* consume */ }
 %%
-int main(void){
+
+int yywrap() { return 1; }
+int main(){
     yylex();
     return 0;
 }
@@ -411,9 +453,11 @@ int is_keyword(const char* s){
 [A-Za-z_][A-Za-z0-9_]*   { if(!is_keyword(yytext)) { id_count++; } }
 .|\n                     { /* ignore others */ }
 %%
+
+int yywrap() { return 1; }
 int main(void){
     yylex();
-    printf("Identifiers: %d\n", id_count);
+    printf("\n\nIdentifiers: %d\n", id_count);
     return 0;
 }
 ```
