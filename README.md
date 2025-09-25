@@ -14,15 +14,6 @@ Welcome to the **Compiler-Design** repository! This repository contains **Flex-b
   </marquee>
 </div>
 
-<style>
-@keyframes colorchange {
-  0% {color: #1E90FF;}
-  25% {color: #32CD32;}
-  50% {color: #FF4500;}
-  75% {color: #FFD700;}
-  100% {color: #1E90FF;}
-}
-</style>
 
 ---
 
