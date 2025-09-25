@@ -1,14 +1,35 @@
+# Compiler-Design
 
-Compiler-Design
+Welcome to the **Compiler-Design** repository! This repository contains **Flex-based lexical analyzers** demonstrating different concepts in **lexical analysis**, a fundamental phase of compiler design. Each program tokenizes input, counts characters, or recognizes patterns.
 
-Welcome to the Compiler-Design repository!
-This repository contains Flex-based lexical analyzers demonstrating different concepts in lexical analysis, a fundamental phase of compiler design. Each program tokenizes input, counts characters, or recognizes patterns.
+---
 
-💻 Lexical Analyzer Codes
-1️⃣ Count Total Characters
+## 🌟 Animated Welcome Message
 
-Counts all characters in the input.
+<div style="text-align:center;">
+  <h1 style="color:#1E90FF; animation: colorchange 4s infinite;">🚀 Welcome to Compiler-Design Repo 🚀</h1>
+  <p style="font-size:16px; color:#333;">Learn <strong>Lexical Analysis</strong> with Flex code examples and token recognition.</p>
+  <marquee behavior="scroll" direction="left" scrollamount="5" style="color:red; font-weight:bold;">
+    Run the code and count characters, vowels, or identifiers in your input!
+  </marquee>
+</div>
 
+<style>
+@keyframes colorchange {
+  0% {color: #1E90FF;}
+  25% {color: #32CD32;}
+  50% {color: #FF4500;}
+  75% {color: #FFD700;}
+  100% {color: #1E90FF;}
+}
+</style>
+
+---
+
+## 💻 Lexical Analyzer Codes
+
+### 1️⃣ Count Total Characters
+```c
 %{
 #include <stdio.h>
 int v = 0;
@@ -26,14 +47,6 @@ int main(){
     printf("\nNumber of Char = %d ", v);
     return 0;
 }
-
-
-Explanation:
-
-. matches any character except newline and increments v.
-
-\n stops the scanner.
-
 2️⃣ Count Uppercase & Lowercase Letters
 %{
 #include <stdio.h>
@@ -57,11 +70,7 @@ int main(){
 }
 
 
-Explanation:
-
-[A-Z] matches uppercase letters, [a-z] matches lowercase.
-
-. ignores other characters.
+Explanation: [A-Z] matches uppercase letters, [a-z] matches lowercase. . ignores other characters.
 
 3️⃣ Identify Keywords, Operators, Identifiers, Numbers, Strings, Comments
 %{
@@ -98,47 +107,23 @@ int main(int argc, char **argv) {
 }
 
 
-Explanation:
-
-Detects keywords, identifiers, numbers, operators, delimiters, strings, and comments.
-
-Uses yytext to print matched tokens.
-
-Reads input from input.txt.
+Explanation: Detects keywords, identifiers, numbers, operators, delimiters, strings, and comments. Uses yytext to print matched tokens. Reads input from input.txt.
 
 4️⃣ Pattern Matching Examples
-
-Match exact patterns like "aa" or "abb".
-
-Recognize sequences using regular expressions in Flex.
-
-Example:
-
 ^.*aa$          {printf("Matched: %s\n", yytext);}
 ^.*[^.*aa$]     {printf("Not Matched: %s\n", yytext);}
 
 
-Explanation:
-
-^ → start of line, $ → end of line.
-
-Flex matches strings exactly or by pattern.
+Explanation: ^ → start of line, $ → end of line. Flex matches strings exactly or by pattern.
 
 5️⃣ Number Systems
-
-Recognizes binary, octal, decimal, and hexadecimal numbers.
-
 0[xX][0-9a-fA-F]+    { printf("Hexadecimal: %s\n", yytext); }
 0[bB][01]+           { printf("Binary: %s\n", yytext); }
 0[0-7]+              { printf("Octal: %s\n", yytext); }
 0?[1-9][0-9]*        { printf("Decimal: %s\n", yytext); }
 
 
-Tip:
-
-Use regex patterns for each numeric type.
-
-Great for lexical analyzers handling multiple number systems.
+Detects binary, octal, decimal, and hexadecimal numbers.
 
 6️⃣ Vowels & Consonants Count
 [aeiouAEIOU]              v++;
@@ -146,41 +131,27 @@ Great for lexical analyzers handling multiple number systems.
 .                          ;
 \n                         return 0;
 
-
-Simple example of character classification in Flex.
-
 ✅ How to Run Flex Programs
 flex filename.l
 gcc lex.yy.c -lfl -o output
 ./output
 
+🌈 Interactive HTML Example
+<div style="text-align:center;">
+  <h2 style="color:#FF6347; animation: bounce 2s infinite;">Lexical Analyzer in Action!</h2>
+  <p style="font-size:16px; color:#2E8B57;">Check your input and see tokens highlighted live.</p>
+  <marquee behavior="alternate" scrollamount="10" style="color:purple; font-weight:bold;">
+    Modify patterns and see results in real-time!
+  </marquee>
+</div>
 
-flex filename.l → generates scanner lex.yy.c.
-
-gcc lex.yy.c -lfl -o output → compile with Flex library.
-
-./output → run scanner.
-
-🌟 HTML & Visuals for README
-
-You can make this README interactive and visually appealing using simple HTML snippets. Example:
-
-<h2 style="color:blue; text-align:center;">Welcome to Compiler-Design Repo</h2>
-
-<p style="font-size:16px;">
-Learn <strong>Lexical Analysis</strong> with Flex code examples and token recognition.
-</p>
-
-<marquee behavior="scroll" direction="left" scrollamount="5" style="color:red;">
-Try running the code and count characters, vowels, or identifiers in your input!
-</marquee>
-
-
-marquee → moving text animation.
-
-style → colors, fonts, alignment.
-
-Works inside GitHub README (.md) because GitHub renders basic HTML.
+<style>
+@keyframes bounce {
+  0% {transform: translateY(0px);}
+  50% {transform: translateY(-15px);}
+  100% {transform: translateY(0px);}
+}
+</style>
 
 📂 Folder Structure
 Compiler-Design/
@@ -194,11 +165,3 @@ Compiler-Design/
 │   ├─ vowel_consonant.l
 │   └─ ...
 └─ README.md
-
-🎯 Learning Tips
-
-Run each example with different inputs to see Flex in action.
-
-Modify patterns to create your own token rules.
-
-Practice building a full compiler lexer using these examples.
